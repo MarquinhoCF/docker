@@ -326,7 +326,7 @@ Para facilitar nosso processo, iremos criar um pequeno script em bash para autom
 $ vim images.sh
 ```
 ```shell
-for image in 'nginx' 'mysql:5.7' 'wordpress' 'caiodelgadonew/docker-supermario' 'traefik:v2.4'
+for image in 'nginx' 'mysql:5.7' 'wordpress' 'caiodelgadonew/docker-supermario' 'traefik:v3.6.2'
 do
 docker image pull $image
 docker tag $image registry.docker-dca.example:5000/$image
@@ -1106,8 +1106,9 @@ services:
           memory: 60M
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.game.rule=Host(`supermario.docker-dca.example`)"
-        - "traefik.http.services.game.loadbalancer.server.port=8080"
+        - "traefik.http.routers.supermario.rule=Host(`supermario.docker-dca.example`)"
+        - "traefik.http.routers.supermario.entrypoints=web"
+        - "traefik.http.services.supermario.loadbalancer.server.port=8080"
 ``` 
 
 Vamos criar agora a stack do Traefik
@@ -1116,7 +1117,7 @@ $ vim traefik.yml
 ```
 
 ```yml
-version: '3.9'
+version: "3.9"
 
 networks:
   proxy:
@@ -1124,30 +1125,43 @@ networks:
 
 services:
   traefik:
-    image: "registry.docker-dca.example:5000/traefik:v2.4"
-    command:
-      - --entrypoints.web.address=:80
-      - --providers.docker.swarmMode=true
-      - --providers.docker.exposedByDefault=false
-      - --api
+    image: registry.docker-dca.example:5000/traefik:v3.6.2
     ports:
-      - 80:80
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - "80:80"
+      - "8080:8080"
     networks:
       - proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik-config.yml:/etc/traefik/traefik.yml:ro
     deploy:
       mode: global
       placement:
         constraints:
           - node.role==manager
-      restart_policy:
-        condition: on-failure
       labels:
-        - "traefik.enable=true"
-        - "traefik.http.routers.traefik.rule=Host(`dashboard.docker-dca.example`)"
-        - "traefik.http.routers.traefik.service=api@internal"
-        - "traefik.http.services.traefik.loadbalancer.server.port=80"
+        - traefik.enable=true
+        - traefik.http.routers.dashboard.rule=Host(`dashboard.docker-dca.example`)
+        - traefik.http.routers.dashboard.service=api@internal
+```
+
+```bash
+$ vim traefik-config.yml
+```
+
+```yml
+api:
+  insecure: true
+
+entryPoints:
+  web:
+    address: ":80"
+
+providers:
+  swarm:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+    watch: true
 ```
 
 Efetue o deploy das stacks

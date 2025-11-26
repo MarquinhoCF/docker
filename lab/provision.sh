@@ -12,10 +12,10 @@ cat /root/.ssh/id_rsa.pub >> /home/vagrant/.ssh/authorized_keys
 # Garantindo os hosts
 HOSTS=$(head -n7 /etc/hosts)
 echo -e "$HOSTS" > /etc/hosts
-echo '10.20.20.100 master.docker-dca.example' >> /etc/hosts
-echo '10.20.20.110 node01.docker-dca.example' >> /etc/hosts
-echo '10.20.20.120 node02.docker-dca.example'>> /etc/hosts
-echo '10.20.20.200 registry.docker-dca.example' >> /etc/hosts
+echo '192.168.56.100 master.docker-dca.example' >> /etc/hosts
+echo '192.168.56.110 node01.docker-dca.example' >> /etc/hosts
+echo '192.168.56.120 node02.docker-dca.example'>> /etc/hosts
+echo '192.168.56.200 registry.docker-dca.example' >> /etc/hosts
 
 curl -fsSL https://get.docker.com | bash
 systemctl start docker
