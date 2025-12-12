@@ -343,7 +343,70 @@ $ HARBORVERSION=$(curl -s https://github.com/goharbor/harbor/releases/latest/dow
 $ curl -s https://api.github.com/repos/goharbor/harbor/releases/latest | grep browser_download_url | grep online | cut -d '"' -f 4 | wget -qi -
 $ tar xvf harbor-online-installer-v$HARBORVERSION.tgz
 $ cd harbor
-$ wget https://gist.githubusercontent.com/caiodelgadonew/2c41e8d7fc95ddb9e53ab28ae0c6197f/raw/4d3d5fd77db1aac7afacf91fcfa39bf37383afb7/harbor.yml 
+```
+
+Crie o arquivo `harbor.yml`:
+
+```bash
+$ nano harbor.yml
+```
+
+```yml
+hostname: registry.docker-dca.example
+
+http:
+  port: 80
+
+harbor_admin_password: Harbor12345
+
+database:
+  password: root123
+  max_idle_conns: 50
+  max_open_conns: 100
+
+data_volume: /data
+
+trivy:
+  ignore_unfixed: false
+  skip_update: false
+  insecure: false
+
+jobservice:
+  max_job_workers: 10
+  job_loggers:
+    - stdout
+    - file
+  logger_sweeper_duration: 1 # em dias; obrigatório nas versões novas
+
+notification:
+  webhook_job_max_retry: 10
+  webhook_job_http_client_timeout: 30s
+
+chart:
+  absolute_url: disabled
+
+log:
+  level: info
+  local:
+    rotate_count: 50
+    rotate_size: 200M
+    location: /var/log/harbor
+
+proxy:
+  http_proxy:
+  https_proxy:
+  no_proxy:
+  components:
+    - core
+    - jobservice
+    - trivy
+
+_version: 2.14.0
+```
+
+Continue executando o arquivo de instalação:
+
+```bash
 $ sudo ./install.sh
 ``` 
 

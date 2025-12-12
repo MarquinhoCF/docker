@@ -103,7 +103,7 @@ services:
   prometheus:
     image: prom/prometheus
     volumes:
-      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./config:/etc/prometheus
       - prometheus_data:/prometheus
     ports:
       - 9090:9090
